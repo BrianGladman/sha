@@ -706,7 +706,7 @@ VOID_RETURN sha384(unsigned char hval[], const unsigned char data[], unsigned lo
 
 /* SHA512 initialisation data   */
 
-static const uint64_t i512[8] =
+static const uint64_t i512[SHA512_DIGEST_SIZE >> 3] =
 {
     li_64(6a09e667f3bcc908), li_64(bb67ae8584caa73b),
     li_64(3c6ef372fe94f82b), li_64(a54ff53a5f1d36f1),
@@ -716,7 +716,7 @@ static const uint64_t i512[8] =
 
 /* FIPS PUB 180-4: SHA-512/256 */
 
-static const uint64_t i512_256[8] =
+static const uint64_t i512_256[SHA512_DIGEST_SIZE >> 3] =
 {
     li_64(22312194fc2bf72c), li_64(9f555fa3c84c64c2),
     li_64(2393b86b6f53b151), li_64(963877195940eabd),
@@ -726,7 +726,7 @@ static const uint64_t i512_256[8] =
 
 /* FIPS PUB 180-4: SHA-512/224 */
 
-static const uint64_t i512_224[8] =
+static const uint64_t i512_224[SHA512_DIGEST_SIZE >> 3] =
 {
     li_64(8c3d37c819544da2), li_64(73e1996689dcd4d6),
     li_64(1dfab7ae32ff9c82), li_64(679dd514582f9fcf),
@@ -736,7 +736,7 @@ static const uint64_t i512_224[8] =
 
 /* FIPS PUB 180-4: SHA-512/192 (unsanctioned; facilitates using AES-192) */
 
-static const uint64_t i512_192[8] =
+static const uint64_t i512_192[SHA512_DIGEST_SIZE >> 3] =
 {
     li_64(010176140648b233), li_64(db92aeb1eebadd6f),
     li_64(83a9e27aa1d5ea62), li_64(ec95f77eb609b4e1),
@@ -746,7 +746,7 @@ static const uint64_t i512_192[8] =
 
 /* FIPS PUB 180-4: SHA-512/128 (unsanctioned; facilitates using AES-128) */
 
-static const uint64_t i512_128[8] =
+static const uint64_t i512_128[SHA512_DIGEST_SIZE >> 3] =
 {
     li_64(c953a21464c3e8cc), li_64(06cc9cfd166a34b5),
     li_64(647e88dabf8b24ab), li_64(8513e4dc05a078ac),
