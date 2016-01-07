@@ -734,7 +734,7 @@ static const uint64_t i512_224[8] =
     li_64(3f9d85a86a1d36c8), li_64(1112e6ad91d692a1),
 };
 
-/* FIPS PUB 180-4: SHA-512/192 */
+/* FIPS PUB 180-4: SHA-512/192 (unsanctioned; facilitates using AES-192) */
 
 static const uint64_t i512_192[8] =
 {
@@ -744,7 +744,7 @@ static const uint64_t i512_192[8] =
     li_64(6a2b21abd2db2aec), li_64(24926cdbd918a27f),
 };
 
-/* FIPS PUB 180-4: SHA-512/128 */
+/* FIPS PUB 180-4: SHA-512/128 (unsanctioned; facilitates using AES-128) */
 
 static const uint64_t i512_128[8] =
 {
