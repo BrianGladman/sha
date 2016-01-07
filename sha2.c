@@ -763,25 +763,25 @@ VOID_RETURN sha512_begin(sha512_ctx ctx[1])
 VOID_RETURN sha512_256_begin(sha512_ctx ctx[1])
 {
     memset(ctx, 0, sizeof(sha512_ctx));
-    memcpy(ctx->hash, i512_256, 8 * sizeof(uint_64t));
+    memcpy(ctx->hash, i512_256, sizeof(ctx->hash));
 }
 
 VOID_RETURN sha512_224_begin(sha512_ctx ctx[1])
 {
     memset(ctx, 0, sizeof(sha512_ctx));
-    memcpy(ctx->hash, i512_224, 8 * sizeof(uint_64t));
+    memcpy(ctx->hash, i512_224, sizeof(ctx->hash));
 }
 
 VOID_RETURN sha512_192_begin(sha512_ctx ctx[1])
 {
     memset(ctx, 0, sizeof(sha512_ctx));
-    memcpy(ctx->hash, i512_192, 8 * sizeof(uint_64t));
+    memcpy(ctx->hash, i512_192, sizeof(ctx->hash));
 }
 
 VOID_RETURN sha512_128_begin(sha512_ctx ctx[1])
 {
     memset(ctx, 0, sizeof(sha512_ctx));
-    memcpy(ctx->hash, i512_128, 8 * sizeof(uint_64t));
+    memcpy(ctx->hash, i512_128, sizeof(ctx->hash));
 }
 
 VOID_RETURN sha512_end(unsigned char hval[], sha512_ctx ctx[1])
