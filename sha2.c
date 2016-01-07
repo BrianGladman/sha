@@ -814,7 +814,7 @@ VOID_RETURN sha512(unsigned char hval[], const unsigned char data[], unsigned lo
 
     sha512_begin(cx);
     sha512_hash(data, len, cx);
-    sha_end2(hval, cx, SHA512_DIGEST_SIZE);
+    sha512_end(hval, cx);
 }
 
 VOID_RETURN sha512_256(unsigned char hval[], const unsigned char data[], unsigned long len)
