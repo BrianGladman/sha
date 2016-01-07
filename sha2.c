@@ -706,12 +706,52 @@ VOID_RETURN sha384(unsigned char hval[], const unsigned char data[], unsigned lo
 
 /* SHA512 initialisation data   */
 
-const uint64_t  i512[80] =
+static const uint64_t i512[8] =
 {
     li_64(6a09e667f3bcc908), li_64(bb67ae8584caa73b),
     li_64(3c6ef372fe94f82b), li_64(a54ff53a5f1d36f1),
     li_64(510e527fade682d1), li_64(9b05688c2b3e6c1f),
     li_64(1f83d9abfb41bd6b), li_64(5be0cd19137e2179)
+};
+
+/* FIPS PUB 180-4: SHA-512/256 */
+
+static const uint64_t i512_256[8] =
+{
+    li_64(22312194fc2bf72c), li_64(9f555fa3c84c64c2),
+    li_64(2393b86b6f53b151), li_64(963877195940eabd),
+    li_64(96283ee2a88effe3), li_64(be5e1e2553863992),
+    li_64(2b0199fc2c85b8aa), li_64(0eb72ddc81c52ca2),
+};
+
+/* FIPS PUB 180-4: SHA-512/224 */
+
+static const uint64_t i512_224[8] =
+{
+    li_64(8c3d37c819544da2), li_64(73e1996689dcd4d6),
+    li_64(1dfab7ae32ff9c82), li_64(679dd514582f9fcf),
+    li_64(0f6d2b697bd44da8), li_64(77e36f7304c48942),
+    li_64(3f9d85a86a1d36c8), li_64(1112e6ad91d692a1),
+};
+
+/* FIPS PUB 180-4: SHA-512/192 */
+
+static const uint64_t i512_192[8] =
+{
+    li_64(010176140648b233), li_64(db92aeb1eebadd6f),
+    li_64(83a9e27aa1d5ea62), li_64(ec95f77eb609b4e1),
+    li_64(71a99185c75caefa), li_64(006e8f08baf32e3c),
+    li_64(6a2b21abd2db2aec), li_64(24926cdbd918a27f),
+};
+
+/* FIPS PUB 180-4: SHA-512/128 */
+
+static const uint64_t i512_128[8] =
+{
+    li_64(c953a21464c3e8cc), li_64(06cc9cfd166a34b5),
+    li_64(647e88dabf8b24ab), li_64(8513e4dc05a078ac),
+    li_64(7266fcfb7cba0534), li_64(854a78e2ecd19b93),
+    li_64(8618061711cec2dd), li_64(b20d8506efb929b1),
 };
 
 VOID_RETURN sha512_begin(sha512_ctx ctx[1])
@@ -720,9 +760,53 @@ VOID_RETURN sha512_begin(sha512_ctx ctx[1])
     memcpy(ctx->hash, i512, sizeof(ctx->hash));
 }
 
+VOID_RETURN sha512_256_begin(sha512_ctx ctx[1])
+{
+    memset(ctx, 0, sizeof(sha512_ctx));
+    memcpy(ctx->hash, i512_256, 8 * sizeof(uint_64t));
+}
+
+VOID_RETURN sha512_224_begin(sha512_ctx ctx[1])
+{
+    memset(ctx, 0, sizeof(sha512_ctx));
+    memcpy(ctx->hash, i512_224, 8 * sizeof(uint_64t));
+}
+
+VOID_RETURN sha512_192_begin(sha512_ctx ctx[1])
+{
+    memset(ctx, 0, sizeof(sha512_ctx));
+    memcpy(ctx->hash, i512_192, 8 * sizeof(uint_64t));
+}
+
+VOID_RETURN sha512_128_begin(sha512_ctx ctx[1])
+{
+    memset(ctx, 0, sizeof(sha512_ctx));
+    memcpy(ctx->hash, i512_128, 8 * sizeof(uint_64t));
+}
+
 VOID_RETURN sha512_end(unsigned char hval[], sha512_ctx ctx[1])
 {
     sha_end2(hval, ctx, SHA512_DIGEST_SIZE);
+}
+
+VOID_RETURN sha512_256_end(unsigned char hval[], sha512_ctx ctx[1])
+{
+    sha_end2(hval, ctx, 32);
+}
+
+VOID_RETURN sha512_224_end(unsigned char hval[], sha512_ctx ctx[1])
+{
+    sha_end2(hval, ctx, 28);
+}
+
+VOID_RETURN sha512_192_end(unsigned char hval[], sha512_ctx ctx[1])
+{
+    sha_end2(hval, ctx, 24);
+}
+
+VOID_RETURN sha512_128_end(unsigned char hval[], sha512_ctx ctx[1])
+{
+    sha_end2(hval, ctx, 16);
 }
 
 VOID_RETURN sha512(unsigned char hval[], const unsigned char data[], unsigned long len)
