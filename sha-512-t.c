@@ -1,8 +1,24 @@
 /*
- *  sha-512-t.c - Copyright 2016, Michael Mohr
- *  Released under the GPL version 3.
- *  This is a quick hack that can be used to pre-calculate SHA-512/t IVs.
- *  See: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+---------------------------------------------------------------------------
+Copyright (c) 2016, Michael Mohr, California, US. All rights reserved.
+
+The redistribution and use of this software (with or without changes)
+is allowed without the payment of fees or royalties provided that:
+
+  source code distributions include the above copyright notice, this
+  list of conditions and the following disclaimer;
+
+  binary distributions include the above copyright notice, this list
+  of conditions and the following disclaimer in their documentation.
+
+This software is provided 'as is' with no explicit or implied warranties
+in respect of its operation, including, but not limited to, correctness
+and fitness for purpose.
+---------------------------------------------------------------------------
+Issue Date: 07 Jan 2016
+
+This is a program which can be used to pre-calculate SHA-512/t IVs.
+  For more info: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
 */
 
 #include <stdio.h>
