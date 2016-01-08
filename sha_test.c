@@ -100,6 +100,31 @@ struct
  }
 };
 
+/*
+ *  FIPS PUB 180-4 test vectors for SHA-512/t obtained from:
+ *    http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA512_224.pdf
+ *    http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA512_256.pdf
+ */
+struct
+{   char          *str;
+    unsigned char sha512_224[224 >> 3];
+    unsigned char sha512_256[256 >> 3];
+} byte_v2[2] =
+{
+ {  "abc",
+    {0x46, 0x34, 0x27, 0x0F, 0x70, 0x7B, 0x6A, 0x54, 0xDA, 0xAE, 0x75, 0x30, 0x46, 0x08,
+     0x42, 0xE2, 0x0E, 0x37, 0xED, 0x26, 0x5C, 0xEE, 0xE9, 0xA4, 0x3E, 0x89, 0x24, 0xAA},
+    {0x53, 0x04, 0x8E, 0x26, 0x81, 0x94, 0x1E, 0xF9, 0x9B, 0x2E, 0x29, 0xB7, 0x6B, 0x4C, 0x7D, 0xAB,
+     0xE4, 0xC2, 0xD0, 0xC6, 0x34, 0xFC, 0x6D, 0x46, 0xE0, 0xE2, 0xF1, 0x31, 0x07, 0xE7, 0xAF, 0x23}
+ },
+ {  "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu",
+    {0x23, 0xFE, 0xC5, 0xBB, 0x94, 0xD6, 0x0B, 0x23, 0x30, 0x81, 0x92, 0x64, 0x0B, 0x0C,
+     0x45, 0x33, 0x35, 0xD6, 0x64, 0x73, 0x4F, 0xE4, 0x0E, 0x72, 0x68, 0x67, 0x4A, 0xF9},
+    {0x39, 0x28, 0xE1, 0x84, 0xFB, 0x86, 0x90, 0xF8, 0x40, 0xDA, 0x39, 0x88, 0x12, 0x1D, 0x31, 0xBE,
+     0x65, 0xCB, 0x9D, 0x3E, 0xF8, 0x3E, 0xE6, 0x14, 0x6F, 0xEA, 0xC8, 0x61, 0xE1, 0x9B, 0x56, 0x3A}
+ }
+};
+
 /* SHA1 test vectors from Jim Gillogly  */
 /* and Francois Grieu. In this version  */
 /* they are defined as a repeating byte */
@@ -693,6 +718,30 @@ void do_vecs(FILE *fo, hash_ctx hc[1])
     fprintf(fo, "\n");
 }
 
+void do_vecs_fips_180_4(FILE *fo)
+{   char h[SHA2_MAX_DIGEST_SIZE];
+    int i, l, n;
+
+    for(i = 0; i < 2; ++i)
+    {   l = (int)strlen(byte_v2[i].str);
+        memset(h, 0, sizeof(h));
+        sha512_224(h, byte_v2[i].str, l);
+        n = memcmp(h, byte_v2[i].sha512_224, 224 >> 3);
+        if(n != 0)
+            fprintf(fo, "\nSHA-512/224 failed for input \"%s\"", byte_v2[i].str);
+        else
+            fprintf(fo, "\nSHA-512/224 succeeded for input \"%s\"", byte_v2[i].str);
+        memset(h, 0, sizeof(h));
+        sha512_256(h, byte_v2[i].str, l);
+        n = memcmp(h, byte_v2[i].sha512_256, 256 >> 3);
+        if(n != 0)
+            fprintf(fo, "\nSHA-512/256 failed for input \"%s\"", byte_v2[i].str);
+        else
+            fprintf(fo, "\nSHA-512/256 succeeded for input \"%s\"", byte_v2[i].str);
+    }
+    fprintf(fo, "\n");
+}
+
 void do_tests(FILE *fo, enum hash alg, enum test t)
 {   hash_ctx      hc[1];
 
@@ -785,6 +834,7 @@ int main(void)
 #if defined(TEST_SHA512)
     alg = SHA512 | (SHA2_BITS ? BITS : 0);
     do_tests(fo, alg, tests);
+    do_vecs_fips_180_4(fo);
 #endif
 
 #else

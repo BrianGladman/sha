@@ -139,6 +139,26 @@ VOID_RETURN sha512_hash(const unsigned char data[], unsigned long len, sha512_ct
 VOID_RETURN sha512_end(unsigned char hval[], sha512_ctx ctx[1]);
 VOID_RETURN sha512(unsigned char hval[], const unsigned char data[], unsigned long len);
 
+VOID_RETURN sha512_256_begin(sha512_ctx ctx[1]);
+#define sha512_256_hash sha512_hash
+VOID_RETURN sha512_256_end(unsigned char hval[], sha512_ctx ctx[1]);
+VOID_RETURN sha512_256(unsigned char hval[], const unsigned char data[], unsigned long len);
+
+VOID_RETURN sha512_224_begin(sha512_ctx ctx[1]);
+#define sha512_224_hash sha512_hash
+VOID_RETURN sha512_224_end(unsigned char hval[], sha512_ctx ctx[1]);
+VOID_RETURN sha512_224(unsigned char hval[], const unsigned char data[], unsigned long len);
+
+VOID_RETURN sha512_192_begin(sha512_ctx ctx[1]);
+#define sha512_192_hash sha512_hash
+VOID_RETURN sha512_192_end(unsigned char hval[], sha512_ctx ctx[1]);
+VOID_RETURN sha512_192(unsigned char hval[], const unsigned char data[], unsigned long len);
+
+VOID_RETURN sha512_128_begin(sha512_ctx ctx[1]);
+#define sha512_128_hash sha512_hash
+VOID_RETURN sha512_128_end(unsigned char hval[], sha512_ctx ctx[1]);
+VOID_RETURN sha512_128(unsigned char hval[], const unsigned char data[], unsigned long len);
+
 INT_RETURN  sha2_begin(unsigned long size, sha2_ctx ctx[1]);
 VOID_RETURN sha2_hash(const unsigned char data[], unsigned long len, sha2_ctx ctx[1]);
 VOID_RETURN sha2_end(unsigned char hval[], sha2_ctx ctx[1]);
