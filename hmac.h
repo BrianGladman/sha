@@ -52,7 +52,11 @@ enum hmac_hash
     HMAC_SHA384, 
 #endif
 #ifdef SHA_512
-    HMAC_SHA512 
+    HMAC_SHA512, 
+    HMAC_SHA512_256,
+    HMAC_SHA512_224,
+    HMAC_SHA512_192,
+    HMAC_SHA512_128
 #endif
 };
 
