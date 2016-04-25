@@ -791,22 +791,22 @@ VOID_RETURN sha512_end(unsigned char hval[], sha512_ctx ctx[1])
 
 VOID_RETURN sha512_256_end(unsigned char hval[], sha512_ctx ctx[1])
 {
-    sha_end2(hval, ctx, 256 >> 3);
+    sha_end2(hval, ctx, SHA512_256_DIGEST_SIZE);
 }
 
 VOID_RETURN sha512_224_end(unsigned char hval[], sha512_ctx ctx[1])
 {
-    sha_end2(hval, ctx, 224 >> 3);
+    sha_end2(hval, ctx, SHA512_224_DIGEST_SIZE);
 }
 
 VOID_RETURN sha512_192_end(unsigned char hval[], sha512_ctx ctx[1])
 {
-    sha_end2(hval, ctx, 192 >> 3);
+    sha_end2(hval, ctx, SHA512_192_DIGEST_SIZE);
 }
 
 VOID_RETURN sha512_128_end(unsigned char hval[], sha512_ctx ctx[1])
 {
-    sha_end2(hval, ctx, 128 >> 3);
+    sha_end2(hval, ctx, SHA512_128_DIGEST_SIZE);
 }
 
 VOID_RETURN sha512(unsigned char hval[], const unsigned char data[], unsigned long len)
