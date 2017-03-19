@@ -31,10 +31,21 @@ extern "C"
 {
 #endif
 
+#ifdef SHA_1
 #include "sha1.h"
+#endif
+#ifdef SHA_2
 #include "sha2.h"
+#endif
 
+#if !defined(SHA_2)
+#define HMAC_BLOCK_SIZE      SHA1_BLOCK_SIZE
+#define HMAC_MAX_OUTPUT_SIZE SHA1_DIGEST_SIZE
+#else
+#define HMAC_BLOCK_SIZE      SHA2_MAX_BLOCK_SIZE  
 #define HMAC_MAX_OUTPUT_SIZE SHA2_MAX_DIGEST_SIZE
+#endif
+
 #define HMAC_IN_DATA  0xffffffff
 
 enum hmac_hash  
@@ -68,7 +79,7 @@ typedef struct
 {   hf_begin        *f_begin;
     hf_hash         *f_hash;
     hf_end          *f_end;
-    unsigned char   key[SHA2_MAX_BLOCK_SIZE];
+    unsigned char   key[HMAC_BLOCK_SIZE];
     union
     {
 #ifdef SHA_1
