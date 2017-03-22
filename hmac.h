@@ -31,14 +31,12 @@ extern "C"
 {
 #endif
 
-#ifdef SHA_1
-#include "sha1.h"
-#endif
-#ifdef SHA_2
-#include "sha2.h"
+#if !defined(_SHA1_H) && !defined(_SHA2_H)
+#  include "sha1.h"
+#  include "sha2.h"
 #endif
 
-#if !defined(SHA_2)
+#if !defined(_SHA2_H)
 #define HMAC_BLOCK_SIZE      SHA1_BLOCK_SIZE
 #define HMAC_MAX_OUTPUT_SIZE SHA1_DIGEST_SIZE
 #else
@@ -50,24 +48,26 @@ extern "C"
 
 enum hmac_hash  
 { 
-#ifdef SHA_1
+#ifdef _SHA1_H
     HMAC_SHA1, 
 #endif
-#ifdef SHA_224 
+#ifdef _SHA2_H
+# ifdef SHA_224 
     HMAC_SHA224, 
-#endif
-#ifdef SHA_256
+# endif
+# ifdef SHA_256
     HMAC_SHA256, 
-#endif
-#ifdef SHA_384
+# endif
+# ifdef SHA_384
     HMAC_SHA384, 
-#endif
-#ifdef SHA_512
+# endif
+# ifdef SHA_512
     HMAC_SHA512, 
     HMAC_SHA512_256,
     HMAC_SHA512_224,
     HMAC_SHA512_192,
     HMAC_SHA512_128
+# endif
 #endif
 };
 
@@ -82,20 +82,22 @@ typedef struct
     unsigned char   key[HMAC_BLOCK_SIZE];
     union
     {
-#ifdef SHA_1
+#ifdef _SHA1_H
        sha1_ctx    u_sha1;
 #endif
-#ifdef SHA_224
+#ifdef _SHA2_H
+# ifdef SHA_224
         sha224_ctx  u_sha224;
-#endif
-#ifdef SHA_256
+# endif
+# ifdef SHA_256
         sha256_ctx  u_sha256;
-#endif
-#ifdef SHA_384
+# endif
+# ifdef SHA_384
         sha384_ctx  u_sha384;
-#endif
-#ifdef SHA_512
+# endif
+# ifdef SHA_512
         sha512_ctx  u_sha512;
+# endif
 #endif
     } sha_ctx[1];
     unsigned long   input_len;
