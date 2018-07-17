@@ -99,8 +99,6 @@ typedef struct
     uint32_t    sha2_len;
 } sha2_ctx;
 
-#define SHA2_MAX_DIGEST_SIZE    SHA256_DIGEST_SIZE
-
 #else
 
 #define SHA384_DIGEST_SIZE  48

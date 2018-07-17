@@ -31,8 +31,11 @@ extern "C"
 {
 #endif
 
-#if !defined(_SHA1_H) && !defined(_SHA2_H)
+#if !defined(_SHA1_H)
 #  include "sha1.h"
+#endif
+
+#if !defined(_SHA2_H)
 #  include "sha2.h"
 #endif
 
