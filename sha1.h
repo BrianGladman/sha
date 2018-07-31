@@ -28,6 +28,8 @@ Issue Date: 20/12/2007
 #  define SHA1_BITS 1   /* bit oriented  */
 #endif
 
+#define SHA_1
+
 #include <stdlib.h>
 #include "brg_types.h"
 
