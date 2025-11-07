@@ -155,32 +155,34 @@ VOID_RETURN sha1_compile(sha1_ctx ctx[1])
 #endif
 }
 
-VOID_RETURN sha1_begin(sha1_ctx ctx[1])
+VOID_RETURN sha1_begin(void *ctx)
 {
+    sha1_ctx *sctx = (sha1_ctx *)ctx;
     memset(ctx, 0, sizeof(sha1_ctx));
-    ctx->hash[0] = 0x67452301;
-    ctx->hash[1] = 0xefcdab89;
-    ctx->hash[2] = 0x98badcfe;
-    ctx->hash[3] = 0x10325476;
-    ctx->hash[4] = 0xc3d2e1f0;
+    sctx->hash[0] = 0x67452301;
+    sctx->hash[1] = 0xefcdab89;
+    sctx->hash[2] = 0x98badcfe;
+    sctx->hash[3] = 0x10325476;
+    sctx->hash[4] = 0xc3d2e1f0;
 }
 
 /* SHA1 hash data in an array of bytes into hash buffer and */
 /* call the hash_compile function as required. For both the */
 /* bit and byte orientated versions, the block length 'len' */
-/* must not be greater than 2^32 - 1 bits (2^29 - 1 bytes)  */ 
+/* must not be greater than 2^32 - 1 bits (2^29 - 1 bytes)  */
 
-VOID_RETURN sha1_hash(const unsigned char data[], unsigned long len, sha1_ctx ctx[1])
-{   uint32_t pos = (uint32_t)((ctx->count[0] >> 3) & SHA1_MASK);
-    const unsigned char *sp = data;
-    unsigned char *w = (unsigned char*)ctx->wbuf;
+VOID_RETURN sha1_hash(const void *data, unsigned long len, void *ctx)
+{   sha1_ctx *sctx = (sha1_ctx *)ctx;
+    uint32_t pos = (uint32_t)((sctx->count[0] >> 3) & SHA1_MASK);
+    const unsigned char *sp = (const unsigned char *)data;
+    unsigned char *w = (unsigned char*)sctx->wbuf;
 #if SHA1_BITS == 1
-    uint32_t ofs = (ctx->count[0] & 7);
+    uint32_t ofs = (sctx->count[0] & 7);
 #else
     len <<= 3;
 #endif
-    if((ctx->count[0] += len) < len)
-        ++(ctx->count[1]);
+    if((sctx->count[0] += len) < len)
+        ++(sctx->count[1]);
 #if SHA1_BITS == 1
     if(ofs)                 /* if not on a byte boundary    */
     {
@@ -198,7 +200,7 @@ VOID_RETURN sha1_hash(const unsigned char data[], unsigned long len, sha1_ctx ct
                 if(pos == SHA1_BLOCK_SIZE)
                 {
                     bsw_32(w, SHA1_BLOCK_SIZE >> 2);
-                    sha1_compile(ctx); pos = 0;
+                    sha1_compile(sctx); pos = 0;
                 }
             }
 
@@ -213,8 +215,8 @@ VOID_RETURN sha1_hash(const unsigned char data[], unsigned long len, sha1_ctx ct
         {
             memcpy(w + pos, sp, space);
             bsw_32(w, SHA1_BLOCK_SIZE >> 2);
-            sha1_compile(ctx); 
-            sp += space; len -= (space << 3); 
+            sha1_compile(sctx);
+            sp += space; len -= (space << 3);
             space = SHA1_BLOCK_SIZE; pos = 0;
         }
         memcpy(w + pos, sp, (len + 7 * SHA1_BITS) >> 3);
@@ -223,49 +225,51 @@ VOID_RETURN sha1_hash(const unsigned char data[], unsigned long len, sha1_ctx ct
 
 /* SHA1 final padding and digest calculation  */
 
-VOID_RETURN sha1_end(unsigned char hval[], sha1_ctx ctx[1])
-{   uint32_t    i = (uint32_t)((ctx->count[0] >> 3) & SHA1_MASK), m1;
+VOID_RETURN sha1_end(void *hval, void *ctx)
+{   sha1_ctx *sctx = (sha1_ctx *)ctx;
+    uint32_t    i = (uint32_t)((sctx->count[0] >> 3) & SHA1_MASK), m1;
 
     /* put bytes in the buffer in an order in which references to   */
     /* 32-bit words will put bytes with lower addresses into the    */
     /* top of 32 bit words on BOTH big and little endian machines   */
-    bsw_32(ctx->wbuf, (i + 3 + SHA1_BITS) >> 2);
+    bsw_32(sctx->wbuf, (i + 3 + SHA1_BITS) >> 2);
 
     /* we now need to mask valid bytes and add the padding which is */
     /* a single 1 bit and as many zero bits as necessary. Note that */
     /* we can always add the first padding byte here because the    */
     /* buffer always has at least one empty slot                    */
-    m1 = (unsigned char)0x80 >> (ctx->count[0] & 7);
-    ctx->wbuf[i >> 2] &= ((0xffffff00 | (~m1 + 1)) << 8 * (~i & 3));
-    ctx->wbuf[i >> 2] |= (m1 << 8 * (~i & 3));
+    m1 = (unsigned char)0x80 >> (sctx->count[0] & 7);
+    sctx->wbuf[i >> 2] &= ((0xffffff00 | (~m1 + 1)) << 8 * (~i & 3));
+    sctx->wbuf[i >> 2] |= (m1 << 8 * (~i & 3));
 
     /* we need 9 or more empty positions, one for the padding byte  */
     /* (above) and eight for the length count. If there is not      */
     /* enough space, pad and empty the buffer                       */
     if(i > SHA1_BLOCK_SIZE - 9)
     {
-        if(i < 60) ctx->wbuf[15] = 0;
-        sha1_compile(ctx);
+        if(i < 60) sctx->wbuf[15] = 0;
+        sha1_compile(sctx);
         i = 0;
     }
     else    /* compute a word index for the empty buffer positions  */
         i = (i >> 2) + 1;
 
     while(i < 14) /* and zero pad all but last two positions        */
-        ctx->wbuf[i++] = 0;
+        sctx->wbuf[i++] = 0;
 
     /* the following 32-bit length fields are assembled in the      */
     /* wrong byte order on little endian machines but this is       */
     /* corrected later since they are only ever used as 32-bit      */
     /* word values.                                                 */
-    ctx->wbuf[14] = ctx->count[1];
-    ctx->wbuf[15] = ctx->count[0];
-    sha1_compile(ctx);
+    sctx->wbuf[14] = sctx->count[1];
+    sctx->wbuf[15] = sctx->count[0];
+    sha1_compile(sctx);
 
     /* extract the hash value as bytes in case the hash buffer is   */
     /* misaligned for 32-bit words                                  */
+    unsigned char *out = (unsigned char *)hval;
     for(i = 0; i < SHA1_DIGEST_SIZE; ++i)
-        hval[i] = ((ctx->hash[i >> 2] >> (8 * (~i & 3))) & 0xff);
+        out[i] = ((sctx->hash[i >> 2] >> (8 * (~i & 3))) & 0xff);
 }
 
 VOID_RETURN sha1(unsigned char hval[], const unsigned char data[], unsigned long len)

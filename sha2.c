@@ -17,8 +17,8 @@ and fitness for purpose.
 ---------------------------------------------------------------------------
 Issue Date: 20/12/2007
 
-This code implements sha256, sha384 and sha512 but the latter two 
-functions rely on efficient 64-bit integer operations that may not be 
+This code implements sha256, sha384 and sha512 but the latter two
+functions rely on efficient 64-bit integer operations that may not be
 very efficient on 32-bit machines
 
 The sha256 functions use a type 'sha256_ctx' to hold details of the
@@ -56,7 +56,7 @@ functions using a call with a hash length parameter as follows:
                            unsigned long len, sha2_ctx ctx[1] );
       void sha2_end( unsigned char hval[], sha2_ctx ctx[1] );
 
-The data block length in any one call to any of these hash functions must 
+The data block length in any one call to any of these hash functions must
 be no more than 2^32 - 1 bits or 2^29 - 1 bytes.
 
 My thanks to Erik Andersen <andersen@codepoet.org> for testing this code
@@ -291,17 +291,18 @@ VOID_RETURN sha256_compile(sha256_ctx ctx[1])
 /* SHA256 hash data in an array of bytes into hash buffer   */
 /* and call the hash_compile function as required.          */
 
-VOID_RETURN sha256_hash(const unsigned char data[], unsigned long len, sha256_ctx ctx[1])
-{   uint32_t pos = (uint32_t)((ctx->count[0] >> 3) & SHA256_MASK);
-    const unsigned char *sp = data;
-    unsigned char *w = (unsigned char*)ctx->wbuf;
+VOID_RETURN sha256_hash(const void *data, unsigned long len, void *ctx)
+{   sha256_ctx *sctx = (sha256_ctx *)ctx;
+    uint32_t pos = (uint32_t)((sctx->count[0] >> 3) & SHA256_MASK);
+    const unsigned char *sp = (const unsigned char *)data;
+    unsigned char *w = (unsigned char*)sctx->wbuf;
 #if SHA2_BITS == 1
-    uint32_t ofs = (ctx->count[0] & 7);
+    uint32_t ofs = (sctx->count[0] & 7);
 #else
     len <<= 3;
 #endif
-    if((ctx->count[0] += len) < len)
-        ++(ctx->count[1]);
+    if((sctx->count[0] += len) < len)
+        ++(sctx->count[1]);
 
 #if SHA2_BITS == 1
     if(ofs)                 /* if not on a byte boundary    */
@@ -320,7 +321,7 @@ VOID_RETURN sha256_hash(const unsigned char data[], unsigned long len, sha256_ct
                 if(pos == SHA256_BLOCK_SIZE)
                 {
                     bsw_32(w, SHA256_BLOCK_SIZE >> 2);
-                    sha256_compile(ctx); pos = 0;
+                    sha256_compile(sctx); pos = 0;
                 }
             }
 
@@ -335,8 +336,8 @@ VOID_RETURN sha256_hash(const unsigned char data[], unsigned long len, sha256_ct
         {
             memcpy(w + pos, sp, space);
             bsw_32(w, SHA256_BLOCK_SIZE >> 2);
-            sha256_compile(ctx); 
-            sp += space; len -= (space << 3); 
+            sha256_compile(sctx);
+            sp += space; len -= (space << 3);
             space = SHA256_BLOCK_SIZE; pos = 0;
         }
         memcpy(w + pos, sp, (len + 7 * SHA2_BITS) >> 3);
@@ -345,7 +346,7 @@ VOID_RETURN sha256_hash(const unsigned char data[], unsigned long len, sha256_ct
 
 /* SHA256 Final padding and digest calculation  */
 
-static void sha_end1(unsigned char hval[], sha256_ctx ctx[1], const unsigned int hlen)
+static void sha_end1(void *hval, sha256_ctx ctx[1], const unsigned int hlen)
 {   uint32_t    i = (uint32_t)((ctx->count[0] >> 3) & SHA256_MASK), m1;
 
     /* put bytes in the buffer in an order in which references to   */
@@ -386,8 +387,9 @@ static void sha_end1(unsigned char hval[], sha256_ctx ctx[1], const unsigned int
 
     /* extract the hash value as bytes in case the hash buffer is   */
     /* misaligned for 32-bit words                                  */
+    unsigned char *out = (unsigned char *)hval;
     for(i = 0; i < hlen; ++i)
-        hval[i] = ((ctx->hash[i >> 2] >> (8 * (~i & 3))) & 0xff);
+        out[i] = ((ctx->hash[i >> 2] >> (8 * (~i & 3))) & 0xff);
 }
 
 #endif
@@ -400,15 +402,17 @@ const uint32_t i224[8] =
     0xffc00b31ul, 0x68581511ul, 0x64f98fa7ul, 0xbefa4fa4ul
 };
 
-VOID_RETURN sha224_begin(sha224_ctx ctx[1])
+VOID_RETURN sha224_begin(void *ctx)
 {
-    memset(ctx, 0, sizeof(sha224_ctx));
-    memcpy(ctx->hash, i224, sizeof(ctx->hash));
+    sha224_ctx *sctx = (sha224_ctx *)ctx;
+    memset(sctx, 0, sizeof(sha224_ctx));
+    memcpy(sctx->hash, i224, sizeof(sctx->hash));
 }
 
-VOID_RETURN sha224_end(unsigned char hval[], sha224_ctx ctx[1])
+VOID_RETURN sha224_end(void *hval, void *ctx)
 {
-    sha_end1(hval, ctx, SHA224_DIGEST_SIZE);
+    sha224_ctx *sctx = (sha224_ctx *)ctx;
+    sha_end1(hval, sctx, SHA224_DIGEST_SIZE);
 }
 
 VOID_RETURN sha224(unsigned char hval[], const unsigned char data[], unsigned long len)
@@ -429,15 +433,17 @@ const uint32_t i256[8] =
     0x510e527ful, 0x9b05688cul, 0x1f83d9abul, 0x5be0cd19ul
 };
 
-VOID_RETURN sha256_begin(sha256_ctx ctx[1])
+VOID_RETURN sha256_begin(void *ctx)
 {
-    memset(ctx, 0, sizeof(sha256_ctx));
-    memcpy(ctx->hash, i256, sizeof(ctx->hash));
+    sha256_ctx *sctx = (sha256_ctx *)ctx;
+    memset(sctx, 0, sizeof(sha256_ctx));
+    memcpy(sctx->hash, i256, sizeof(sctx->hash));
 }
 
-VOID_RETURN sha256_end(unsigned char hval[], sha256_ctx ctx[1])
+VOID_RETURN sha256_end(void *hval, void *ctx)
 {
-    sha_end1(hval, ctx, SHA256_DIGEST_SIZE);
+    sha256_ctx *sctx = (sha256_ctx *)ctx;
+    sha_end1(hval, sctx, SHA256_DIGEST_SIZE);
 }
 
 VOID_RETURN sha256(unsigned char hval[], const unsigned char data[], unsigned long len)
@@ -566,18 +572,19 @@ VOID_RETURN sha512_compile(sha512_ctx ctx[1])
 /* buffer will now go to the high end of words on BOTH big  */
 /* and little endian systems                                */
 
-VOID_RETURN sha512_hash(const unsigned char data[], unsigned long len, sha512_ctx ctx[1])
-{   uint32_t pos = (uint32_t)(ctx->count[0] >> 3) & SHA512_MASK;
-    const unsigned char *sp = data;
-    unsigned char *w = (unsigned char*)ctx->wbuf;
+VOID_RETURN sha512_hash(const void *data, unsigned long len, void *ctx)
+{   sha512_ctx *sctx = (sha512_ctx *)ctx;
+    uint32_t pos = (uint32_t)(sctx->count[0] >> 3) & SHA512_MASK;
+    const unsigned char *sp = (const unsigned char *)data;
+    unsigned char *w = (unsigned char*)sctx->wbuf;
 #if SHA2_BITS == 1
-    uint32_t ofs = (ctx->count[0] & 7);
+    uint32_t ofs = (sctx->count[0] & 7);
 #else
     len <<= 3;
 #endif
 
-    if((ctx->count[0] += len) < len)
-        ++(ctx->count[1]);
+    if((sctx->count[0] += len) < len)
+        ++(sctx->count[1]);
 
 #if SHA2_BITS == 1
     if(ofs)                 /* if not on a byte boundary    */
@@ -596,7 +603,7 @@ VOID_RETURN sha512_hash(const unsigned char data[], unsigned long len, sha512_ct
                 if(pos == SHA512_BLOCK_SIZE)
                 {
                     bsw_64(w, SHA512_BLOCK_SIZE >> 3);
-                    sha512_compile(ctx); pos = 0;
+                    sha512_compile(sctx); pos = 0;
                 }
             }
 
@@ -611,8 +618,8 @@ VOID_RETURN sha512_hash(const unsigned char data[], unsigned long len, sha512_ct
         {
             memcpy(w + pos, sp, space);
             bsw_64(w, SHA512_BLOCK_SIZE >> 3);
-            sha512_compile(ctx); 
-            sp += space; len -= (space << 3); 
+            sha512_compile(sctx);
+            sp += space; len -= (space << 3);
             space = SHA512_BLOCK_SIZE; pos = 0;
         }
         memcpy(w + pos, sp, (len + 7 * SHA2_BITS) >> 3);
@@ -621,50 +628,52 @@ VOID_RETURN sha512_hash(const unsigned char data[], unsigned long len, sha512_ct
 
 /* SHA384/512 Final padding and digest calculation  */
 
-static void sha_end2(unsigned char hval[], sha512_ctx ctx[1], const unsigned int hlen)
-{   uint32_t     i = (uint32_t)((ctx->count[0] >> 3) & SHA512_MASK);
+static void sha_end2(void *hval, void *ctx, const unsigned int hlen)
+{   sha512_ctx *sctx = (sha512_ctx *)ctx;
+    uint32_t     i = (uint32_t)((sctx->count[0] >> 3) & SHA512_MASK);
     uint64_t     m1;
 
     /* put bytes in the buffer in an order in which references to   */
     /* 32-bit words will put bytes with lower addresses into the    */
     /* top of 32 bit words on BOTH big and little endian machines   */
-    bsw_64(ctx->wbuf, (i + 7 + SHA2_BITS) >> 3);
+    bsw_64(sctx->wbuf, (i + 7 + SHA2_BITS) >> 3);
 
     /* we now need to mask valid bytes and add the padding which is */
     /* a single 1 bit and as many zero bits as necessary. Note that */
     /* we can always add the first padding byte here because the    */
     /* buffer always has at least one empty slot                    */
-    m1 = (unsigned char)0x80 >> (ctx->count[0] & 7);
-    ctx->wbuf[i >> 3] &= ((li_64(ffffffffffffff00) | (~m1 + 1)) << 8 * (~i & 7));
-    ctx->wbuf[i >> 3] |= (m1 << 8 * (~i & 7));
+    m1 = (unsigned char)0x80 >> (sctx->count[0] & 7);
+    sctx->wbuf[i >> 3] &= ((li_64(ffffffffffffff00) | (~m1 + 1)) << 8 * (~i & 7));
+    sctx->wbuf[i >> 3] |= (m1 << 8 * (~i & 7));
 
     /* we need 17 or more empty byte positions, one for the padding */
     /* byte (above) and sixteen for the length count.  If there is  */
     /* not enough space pad and empty the buffer                    */
     if(i > SHA512_BLOCK_SIZE - 17)
     {
-        if(i < 120) ctx->wbuf[15] = 0;
-        sha512_compile(ctx);
+        if(i < 120) sctx->wbuf[15] = 0;
+        sha512_compile(sctx);
         i = 0;
     }
     else
         i = (i >> 3) + 1;
 
     while(i < 14)
-        ctx->wbuf[i++] = 0;
+        sctx->wbuf[i++] = 0;
 
     /* the following 64-bit length fields are assembled in the      */
     /* wrong byte order on little endian machines but this is       */
     /* corrected later since they are only ever used as 64-bit      */
     /* word values.                                                 */
-    ctx->wbuf[14] = ctx->count[1];
-    ctx->wbuf[15] = ctx->count[0];
-    sha512_compile(ctx);
+    sctx->wbuf[14] = sctx->count[1];
+    sctx->wbuf[15] = sctx->count[0];
+    sha512_compile(sctx);
 
     /* extract the hash value as bytes in case the hash buffer is   */
     /* misaligned for 32-bit words                                  */
+    unsigned char *out = (unsigned char *)hval;
     for(i = 0; i < hlen; ++i)
-        hval[i] = ((ctx->hash[i >> 3] >> (8 * (~i & 7))) & 0xff);
+        out[i] = ((sctx->hash[i >> 3] >> (8 * (~i & 7))) & 0xff);
 }
 
 #endif
@@ -681,15 +690,17 @@ const uint64_t  i384[80] =
     li_64(db0c2e0d64f98fa7), li_64(47b5481dbefa4fa4)
 };
 
-VOID_RETURN sha384_begin(sha384_ctx ctx[1])
+VOID_RETURN sha384_begin(void *ctx)
 {
-    memset(ctx, 0, sizeof(sha384_ctx));
-    memcpy(ctx->hash, i384, sizeof(ctx->hash));
+    sha384_ctx *sctx = (sha384_ctx *)ctx;
+    memset(sctx, 0, sizeof(sha384_ctx));
+    memcpy(sctx->hash, i384, sizeof(sctx->hash));
 }
 
-VOID_RETURN sha384_end(unsigned char hval[], sha384_ctx ctx[1])
+VOID_RETURN sha384_end(void *hval, void *ctx)
 {
-    sha_end2(hval, ctx, SHA384_DIGEST_SIZE);
+    sha384_ctx *sctx = (sha384_ctx *)ctx;
+    sha_end2(hval, sctx, SHA384_DIGEST_SIZE);
 }
 
 VOID_RETURN sha384(unsigned char hval[], const unsigned char data[], unsigned long len)
@@ -754,59 +765,69 @@ static const uint64_t i512_128[SHA512_DIGEST_SIZE >> 3] =
     li_64(8618061711cec2dd), li_64(b20d8506efb929b1),
 };
 
-VOID_RETURN sha512_begin(sha512_ctx ctx[1])
+VOID_RETURN sha512_begin(void *ctx)
 {
-    memset(ctx, 0, sizeof(sha512_ctx));
-    memcpy(ctx->hash, i512, sizeof(ctx->hash));
+    sha512_ctx *sctx = (sha512_ctx *)ctx;
+    memset(sctx, 0, sizeof(sha512_ctx));
+    memcpy(sctx->hash, i512, sizeof(sctx->hash));
 }
 
-VOID_RETURN sha512_256_begin(sha512_ctx ctx[1])
+VOID_RETURN sha512_256_begin(void *ctx)
 {
-    memset(ctx, 0, sizeof(sha512_ctx));
-    memcpy(ctx->hash, i512_256, sizeof(ctx->hash));
+    sha512_ctx *sctx = (sha512_ctx *)ctx;
+    memset(sctx, 0, sizeof(sha512_ctx));
+    memcpy(sctx->hash, i512_256, sizeof(sctx->hash));
 }
 
-VOID_RETURN sha512_224_begin(sha512_ctx ctx[1])
+VOID_RETURN sha512_224_begin(void *ctx)
 {
-    memset(ctx, 0, sizeof(sha512_ctx));
-    memcpy(ctx->hash, i512_224, sizeof(ctx->hash));
+    sha512_ctx *sctx = (sha512_ctx *)ctx;
+    memset(sctx, 0, sizeof(sha512_ctx));
+    memcpy(sctx->hash, i512_224, sizeof(sctx->hash));
 }
 
-VOID_RETURN sha512_192_begin(sha512_ctx ctx[1])
+VOID_RETURN sha512_192_begin(void *ctx)
 {
-    memset(ctx, 0, sizeof(sha512_ctx));
-    memcpy(ctx->hash, i512_192, sizeof(ctx->hash));
+    sha512_ctx *sctx = (sha512_ctx *)ctx;
+    memset(sctx, 0, sizeof(sha512_ctx));
+    memcpy(sctx->hash, i512_192, sizeof(sctx->hash));
 }
 
-VOID_RETURN sha512_128_begin(sha512_ctx ctx[1])
+VOID_RETURN sha512_128_begin(void *ctx)
 {
-    memset(ctx, 0, sizeof(sha512_ctx));
-    memcpy(ctx->hash, i512_128, sizeof(ctx->hash));
+    sha512_ctx *sctx = (sha512_ctx *)ctx;
+    memset(sctx, 0, sizeof(sha512_ctx));
+    memcpy(sctx->hash, i512_128, sizeof(sctx->hash));
 }
 
-VOID_RETURN sha512_end(unsigned char hval[], sha512_ctx ctx[1])
+VOID_RETURN sha512_end(void *hval, void *ctx)
 {
-    sha_end2(hval, ctx, SHA512_DIGEST_SIZE);
+    sha512_ctx *sctx = (sha512_ctx *)ctx;
+    sha_end2(hval, sctx, SHA512_DIGEST_SIZE);
 }
 
-VOID_RETURN sha512_256_end(unsigned char hval[], sha512_ctx ctx[1])
+VOID_RETURN sha512_256_end(void *hval, void *ctx)
 {
-    sha_end2(hval, ctx, SHA512_256_DIGEST_SIZE);
+    sha512_ctx *sctx = (sha512_ctx *)ctx;
+    sha_end2(hval, sctx, SHA512_256_DIGEST_SIZE);
 }
 
-VOID_RETURN sha512_224_end(unsigned char hval[], sha512_ctx ctx[1])
+VOID_RETURN sha512_224_end(void *hval, void *ctx)
 {
-    sha_end2(hval, ctx, SHA512_224_DIGEST_SIZE);
+    sha512_ctx *sctx = (sha512_ctx *)ctx;
+    sha_end2(hval, sctx, SHA512_224_DIGEST_SIZE);
 }
 
-VOID_RETURN sha512_192_end(unsigned char hval[], sha512_ctx ctx[1])
+VOID_RETURN sha512_192_end(void *hval, void *ctx)
 {
-    sha_end2(hval, ctx, SHA512_192_DIGEST_SIZE);
+    sha512_ctx *sctx = (sha512_ctx *)ctx;
+    sha_end2(hval, sctx, SHA512_192_DIGEST_SIZE);
 }
 
-VOID_RETURN sha512_128_end(unsigned char hval[], sha512_ctx ctx[1])
+VOID_RETURN sha512_128_end(void *hval, void *ctx)
 {
-    sha_end2(hval, ctx, SHA512_128_DIGEST_SIZE);
+    sha512_ctx *sctx = (sha512_ctx *)ctx;
+    sha_end2(hval, sctx, SHA512_128_DIGEST_SIZE);
 }
 
 VOID_RETURN sha512(unsigned char hval[], const unsigned char data[], unsigned long len)

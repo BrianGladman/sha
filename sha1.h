@@ -60,9 +60,9 @@ typedef struct
 
 VOID_RETURN sha1_compile(sha1_ctx ctx[1]);
 
-VOID_RETURN sha1_begin(sha1_ctx ctx[1]);
-VOID_RETURN sha1_hash(const unsigned char data[], unsigned long len, sha1_ctx ctx[1]);
-VOID_RETURN sha1_end(unsigned char hval[], sha1_ctx ctx[1]);
+VOID_RETURN sha1_begin(void *ctx);
+VOID_RETURN sha1_hash(const void *data, unsigned long len, void *ctx);
+VOID_RETURN sha1_end(void *hval, void *ctx);
 VOID_RETURN sha1(unsigned char hval[], const unsigned char data[], unsigned long len);
 
 #if defined(__cplusplus)
